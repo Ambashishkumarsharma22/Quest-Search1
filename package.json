@@ -1,0 +1,13 @@
+{
+  "name": "quest-search",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:backend": "cd apps/backend && npm install && npm run dev",
+    "start:frontend": "cd apps/frontend && npm install && npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

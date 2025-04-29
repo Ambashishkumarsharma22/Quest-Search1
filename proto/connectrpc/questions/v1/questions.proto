@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package connectrpc.questions.v1;
+
+message Question {
+  string id = 1;
+  string type = 2;
+  string title = 3;
+  repeated string options = 4;
+  repeated string blocks = 5;
+  string solution = 6;
+}
+
+message SearchRequest {
+  string query = 1;
+  string type = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message SearchResponse {
+  repeated Question questions = 1;
+  int32 totalCount = 2;
+}
+
+service QuestionService {
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+}

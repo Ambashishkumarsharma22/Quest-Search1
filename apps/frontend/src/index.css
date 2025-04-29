@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #854f00;
+    --color-surface-tint: #854f00;
+    --color-on-primary: #ffffff;
+    --color-primary-container: #ffa500;
+    --color-on-primary-container: #684000;
+    --color-secondary: #7d5722;
+    --color-on-secondary: #ffffff;
+    --color-secondary-container: #fdd7a8;
+    --color-on-secondary-container: #784f1e;
+    --color-tertiary: #596400;
+    --color-on-tertiary: #ffffff;
+    --color-tertiary-container: #b0c22d;
+    --color-on-tertiary-container: #454d00;
+    --color-error: #ba1a1a;
+    --color-on-error: #ffffff;
+    --color-error-container: #ffd9d6;
+    --color-on-error-container: #93000a;
+    --color-background: #fff8f4;
+    --color-on-background: #221a11;
+    --color-surface: #fff8f4;
+    --color-on-surface: #221a11;
+    --color-surface-variant: #f6dfc7;
+    --color-on-surface-variant: #53432d;
+    --color-outline: #86746a;
+    --color-outline-variant: #d9c3ac;
+    --color-shadow: #000000;
+    --color-scrim: #000000;
+    --color-inverse-surface: #382f25;
+    --color-inverse-on-surface: #fededc;
+    --color-inverse-primary: #ffa55c;
+    --color-primary-fixed: #ffdcb7;
+    --color-on-primary-fixed: #2a1700;
+    --color-primary-fixed-dim: #ffa55c;
+    --color-on-primary-fixed-variant: #653e00;
+    --color-secondary-fixed: #ffdcb7;
+    --color-on-secondary-fixed: #2a1700;
+    --color-secondary-fixed-dim: #f0bd7f;
+    --color-on-secondary-fixed-variant: #62400c;
+    --color-tertiary-fixed: #dadd56;
+    --color-on-tertiary-fixed: #1a1e00;
+    --color-tertiary-fixed-dim: #becf3c;
+    --color-on-tertiary-fixed-variant: #434b00;
+    --color-surface-dim: #e7d7c8;
+    --color-surface-bright: #fff8f4;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low: #fff1e5;
+    --color-surface-container: #fbeae0;
+    --color-surface-container-high: #f6e5d6;
+    --color-surface-container-highest: #f0e0d1;
+
+    --font-atkinson: 'Atkinson Hyperlegible', sans-serif;
+}

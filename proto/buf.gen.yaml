@@ -1,0 +1,10 @@
+version: v2
+plugins:
+  - local: protoc-gen-es
+    out: ../apps/backend/proto_gen
+    include_imports: true
+    opt: target=ts
+  - local: protoc-gen-es
+    out: ../apps/frontend/src/ProtoGen
+    include_imports: true
+    opt: target=ts
