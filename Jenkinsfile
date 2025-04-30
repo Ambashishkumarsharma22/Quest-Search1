@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         DOCKER_COMPOSE_VERSION = "1.29.2"
-        ZIP_FILE = 'Quest-Search.zip'      // Update with your ZIP file name
-        EXTRACT_DIR = 'project'            // Directory where we'll extract
+        ZIP_FILE = 'Quest-Search.zip'
+        EXTRACT_DIR = 'project'
     }
 
     stages {
@@ -21,7 +21,7 @@ pipeline {
                 sh '''
                     if ! command -v unzip &> /dev/null; then
                         echo "Installing unzip..."
-                        sudo apt-get update && sudo apt-get install -y unzip
+                        apt-get update && apt-get install -y unzip
                     fi
                 '''
             }
@@ -43,10 +43,8 @@ pipeline {
                 sh '''
                     if ! command -v docker-compose &> /dev/null; then
                         echo "Installing Docker Compose..."
-                        sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                        sudo chmod +x /usr/local/bin/docker-compose
-                    else
-                        echo "Docker Compose already installed."
+                        curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                        chmod +x /usr/local/bin/docker-compose
                     fi
                 '''
             }
@@ -78,4 +76,3 @@ pipeline {
         }
     }
 }
-
