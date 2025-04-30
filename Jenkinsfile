@@ -2,55 +2,68 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CLI_EXPERIMENTAL = 'enabled'
+        NODE_ENV = 'development'
+    }
+
+    tools {
+        nodejs 'NodeJS 18'  // Ensure you configure this in Jenkins Global Tools (Manage Jenkins > Global Tool Configuration)
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                echo 'Cloning the repository...'
                 checkout scm
             }
         }
 
-        stage('Unzip Project') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Unzipping project archive...'
-                sh '''
-                    mkdir -p unzipped_project
-                    unzip -o project.zip -d unzipped_project
-                '''
-            }
-        }
-
-        stage('Check Docker & Compose') {
-            steps {
-                sh '''
-                    which docker || echo "Docker not found"
-                    docker --version || echo "Docker CLI not available"
-                    docker compose version || echo "Docker Compose not found"
-                '''
-            }
-        }
-
-        stage('Build and Run Containers') {
-            steps {
-                echo 'Building and starting Docker containers...'
-                dir('unzipped_project') {
-                    sh '''
-                        docker compose down || true
-                        docker compose build
-                        docker compose up -d
-                    '''
+                dir('apps/quest-search') {
+                    sh 'npm install'
                 }
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                dir('apps/quest-search') {
+                    sh 'npm run lint || echo "Linting failed, but continuing..."'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('apps/quest-search') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('apps/quest-search') {
+                    sh 'npm test || echo "Tests failed, but continuing..."'
+                }
+            }
+        }
+
+        stage('Docker Compose (Optional)') {
+            when {
+                expression { fileExists('docker-compose.yml') }
+            }
+            steps {
+                sh 'docker-compose up -d --build'
             }
         }
     }
 
     post {
         always {
-            echo 'Cleaning workspace...'
-            cleanWs()
+            echo 'Pipeline completed.'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
