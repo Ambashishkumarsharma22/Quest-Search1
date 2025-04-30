@@ -2,24 +2,24 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_DIR = "${WORKSPACE}/unzipped_project"
+        PROJECT_ZIP = 'Quest-Search.zip'
+        UNZIP_DIR = 'unzipped_project'
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 echo 'Cloning the repository...'
-                checkout scm
+                git url: 'https://github.com/Ambashishkumarsharma22/Quest-Search1', branch: 'main'
             }
         }
 
         stage('Unzip Project') {
             steps {
-                echo 'Unzipping project archive...'
-                sh '''
-                    mkdir -p unzipped_project
-                    unzip -o project.zip -d unzipped_project
-                '''
+                echo 'Unzipping project...'
+                sh 'rm -rf ${UNZIP_DIR}'
+                sh 'unzip ${PROJECT_ZIP} -d ${UNZIP_DIR}'
             }
         }
 
@@ -27,52 +27,38 @@ pipeline {
             steps {
                 echo 'Ensuring Dockerfile casing is correct...'
                 sh '''
-                    if [ -f unzipped_project/apps/backend/DockerFile ]; then
-                        mv unzipped_project/apps/backend/DockerFile unzipped_project/apps/backend/Dockerfile
-                    fi
+                if [ -f ${UNZIP_DIR}/apps/backend/DockerFile ]; then
+                    mv ${UNZIP_DIR}/apps/backend/DockerFile ${UNZIP_DIR}/apps/backend/Dockerfile
+                fi
                 '''
             }
         }
 
         stage('Build and Run Containers') {
             steps {
-                dir('unzipped_project') {
+                dir("${UNZIP_DIR}") {
                     echo 'Building Docker containers...'
-                    sh 'docker-compose down || true'
-                    sh 'docker-compose build'
-                    sh 'docker-compose up -d'
+                    sh 'docker compose down || true'
+                    sh 'docker compose build'
+                    sh 'docker compose up -d'
                 }
             }
         }
 
         stage('Run Frontend Tests') {
             steps {
-                dir('unzipped_project/apps/frontend') {
-                    echo 'Installing frontend dependencies and running tests...'
-                    sh '''
-                        if ! command -v npm > /dev/null; then
-                            echo "npm not found. Please install Node.js and npm."
-                            exit 1
-                        fi
-                        npm ci
-                        npm test || echo "Frontend tests failed"
-                    '''
+                dir("${UNZIP_DIR}/apps/frontend") {
+                    sh 'npm install'
+                    sh 'npm test || true'
                 }
             }
         }
 
         stage('Run Backend Tests') {
             steps {
-                dir('unzipped_project/apps/backend') {
-                    echo 'Installing backend dependencies and running tests...'
-                    sh '''
-                        if ! command -v npm > /dev/null; then
-                            echo "npm not found. Please install Node.js and npm."
-                            exit 1
-                        fi
-                        npm ci
-                        npm test || echo "Backend tests failed"
-                    '''
+                dir("${UNZIP_DIR}/apps/backend") {
+                    sh 'npm install'
+                    sh 'npm test || true'
                 }
             }
         }
@@ -81,8 +67,8 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-            dir('unzipped_project') {
-                sh 'docker-compose down || true'
+            dir("${UNZIP_DIR}") {
+                sh 'docker compose down || true'
             }
             cleanWs()
         }
