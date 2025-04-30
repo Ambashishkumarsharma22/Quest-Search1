@@ -1,65 +1,56 @@
 pipeline {
     agent any
 
-    environment {
-        PROJECT_ZIP = 'project.zip'
-        UNZIP_DIR = 'unzipped_project'
-    }
-
     stages {
+        stage('Declarative: Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Checkout Code') {
             steps {
-                echo 'Cloning the repository...'
                 git url: 'https://github.com/Ambashishkumarsharma22/Quest-Search1', branch: 'main'
             }
         }
 
         stage('Unzip Project') {
             steps {
-                echo 'Unzipping project archive...'
-                sh 'mkdir -p ${UNZIP_DIR}'
-                sh 'unzip -o ${PROJECT_ZIP} -d ${UNZIP_DIR}'
+                sh 'unzip project.zip -d ./unzipped || echo "No zip found"'
             }
         }
 
         stage('Fix Dockerfile Name') {
             steps {
-                echo 'Ensuring Dockerfile casing is correct...'
-                sh '''
-                    if [ -f ${UNZIP_DIR}/apps/backend/DockerFile ]; then
-                        mv ${UNZIP_DIR}/apps/backend/DockerFile ${UNZIP_DIR}/apps/backend/Dockerfile
-                    fi
-                '''
+                sh 'mv ./unzipped/Dockerfile.prod ./unzipped/Dockerfile || true'
             }
         }
 
         stage('Build and Run Containers') {
             steps {
-                dir("${UNZIP_DIR}") {
-                    echo 'Building Docker containers...'
-                    sh 'docker compose down || true'
-                    sh 'docker compose build'
-                    sh 'docker compose up -d'
-                }
+                sh '''
+                docker-compose -f ./unzipped/docker-compose.yml up -d --build
+                '''
             }
         }
 
         stage('Run Frontend Tests') {
             steps {
-                dir("${UNZIP_DIR}/apps/frontend") {
-                    sh 'npm install'
-                    sh 'npm test || true'
-                }
+                sh '''
+                cd ./unzipped/frontend
+                npm install
+                npm test || echo "Frontend tests failed"
+                '''
             }
         }
 
         stage('Run Backend Tests') {
             steps {
-                dir("${UNZIP_DIR}/apps/backend") {
-                    sh 'npm install'
-                    sh 'npm test || true'
-                }
+                sh '''
+                cd ./unzipped/backend
+                npm install
+                npm test || echo "Backend tests failed"
+                '''
             }
         }
     }
@@ -67,10 +58,13 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-            dir("${UNZIP_DIR}") {
-                sh 'docker compose down || true'
-            }
-            cleanWs()
+            sh 'docker-compose down || true'
+        }
+        success {
+            echo 'Build completed successfully!'
+        }
+        failure {
+            echo 'Build failed.'
         }
     }
 }
