@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_ZIP = 'Quest-Search.zip'
+        PROJECT_ZIP = 'project.zip'
         UNZIP_DIR = 'unzipped_project'
     }
 
@@ -17,9 +17,9 @@ pipeline {
 
         stage('Unzip Project') {
             steps {
-                echo 'Unzipping project...'
-                sh 'rm -rf ${UNZIP_DIR}'
-                sh 'unzip ${PROJECT_ZIP} -d ${UNZIP_DIR}'
+                echo 'Unzipping project archive...'
+                sh 'mkdir -p ${UNZIP_DIR}'
+                sh 'unzip -o ${PROJECT_ZIP} -d ${UNZIP_DIR}'
             }
         }
 
@@ -27,9 +27,9 @@ pipeline {
             steps {
                 echo 'Ensuring Dockerfile casing is correct...'
                 sh '''
-                if [ -f ${UNZIP_DIR}/apps/backend/DockerFile ]; then
-                    mv ${UNZIP_DIR}/apps/backend/DockerFile ${UNZIP_DIR}/apps/backend/Dockerfile
-                fi
+                    if [ -f ${UNZIP_DIR}/apps/backend/DockerFile ]; then
+                        mv ${UNZIP_DIR}/apps/backend/DockerFile ${UNZIP_DIR}/apps/backend/Dockerfile
+                    fi
                 '''
             }
         }
