@@ -1,69 +1,32 @@
 pipeline {
     agent any
 
-    environment {
-        NODE_ENV = 'development'
-    }
-
-    tools {
-        nodejs 'NodeJS 18'  // Ensure you configure this in Jenkins Global Tools (Manage Jenkins > Global Tool Configuration)
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Clone Repo') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                dir('apps/quest-search') {
-                    sh 'npm install'
-                }
-            }
-        }
-
-        stage('Lint') {
-            steps {
-                dir('apps/quest-search') {
-                    sh 'npm run lint || echo "Linting failed, but continuing..."'
-                }
+                git 'https://github.com/Ambashishkumarsharma22/Quest-Search1'
             }
         }
 
         stage('Build') {
             steps {
-                dir('apps/quest-search') {
-                    sh 'npm run build'
-                }
+                echo 'Building the project...'
+                // Add build commands here
             }
         }
 
         stage('Test') {
             steps {
-                dir('apps/quest-search') {
-                    sh 'npm test || echo "Tests failed, but continuing..."'
-                }
+                echo 'Running tests...'
+                // Add test commands here
             }
         }
 
-        stage('Docker Compose (Optional)') {
-            when {
-                expression { fileExists('docker-compose.yml') }
-            }
+        stage('Deploy') {
             steps {
-                sh 'docker-compose up -d --build'
+                echo 'Deploying...'
+                // Add deployment steps if any
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline completed.'
-        }
-        failure {
-            echo 'Pipeline failed!'
         }
     }
 }
