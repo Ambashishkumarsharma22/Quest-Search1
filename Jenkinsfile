@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Add /usr/local/bin to PATH so Jenkins can find docker-compose
-        PATH = "/usr/local/bin:$PATH"
+        DOCKER_CLI_EXPERIMENTAL = 'enabled'
     }
 
     stages {
@@ -18,9 +17,18 @@ pipeline {
             steps {
                 echo 'Unzipping project archive...'
                 sh '''
-                    command -v unzip
                     mkdir -p unzipped_project
                     unzip -o project.zip -d unzipped_project
+                '''
+            }
+        }
+
+        stage('Check Docker & Compose') {
+            steps {
+                sh '''
+                    which docker || echo "Docker not found"
+                    docker --version || echo "Docker CLI not available"
+                    docker compose version || echo "Docker Compose not found"
                 '''
             }
         }
@@ -30,9 +38,9 @@ pipeline {
                 echo 'Building and starting Docker containers...'
                 dir('unzipped_project') {
                     sh '''
-                        docker-compose down || true
-                        docker-compose build
-                        docker-compose up -d
+                        docker compose down || true
+                        docker compose build
+                        docker compose up -d
                     '''
                 }
             }
