@@ -12,25 +12,19 @@ pipeline {
             }
         }
 
-        stage('Unzip Project') {
-            steps {
-                script {
-                    sh 'unzip -o Quest-search-main.zip'
-                }
-            }
-        }
-
         stage('Check Docker & Compose') {
             steps {
-                sh 'docker --version'
-                sh 'docker-compose --version'
+                sh 'docker --version || echo "Docker not found"'
+                sh 'docker-compose --version || echo "Docker Compose not found"'
             }
         }
 
         stage('Build and Run Containers') {
             steps {
-                sh 'docker-compose down || true'
-                sh 'docker-compose up --build -d'
+                dir('Quest-search-main') {
+                    sh 'docker-compose down || true'
+                    sh 'docker-compose up --build -d'
+                }
             }
         }
     }
