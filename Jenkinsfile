@@ -2,50 +2,35 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/Ambashishkumarsharma22/Quest-Search1.git'
-        ZIP_FILE = 'Quest-search-main.zip'
+        COMPOSE_PROJECT_NAME = "questsearch"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git url: "${REPO_URL}"
+                git url: 'https://github.com/Ambashishkumarsharma22/Quest-Search1', branch: 'main'
             }
         }
 
         stage('Unzip Project') {
             steps {
-                sh '''
-                    if [ -f "${ZIP_FILE}" ]; then
-                        unzip -o ${ZIP_FILE} -d unzipped
-                        echo "Unzipped project to ./unzipped"
-                    else
-                        echo "Zip file not found: ${ZIP_FILE}"
-                    fi
-                '''
+                script {
+                    sh 'unzip -o Quest-search-main.zip'
+                }
             }
         }
 
         stage('Check Docker & Compose') {
             steps {
-                sh '''
-                    docker --version
-                    docker compose version || docker-compose version
-                '''
+                sh 'docker --version'
+                sh 'docker-compose --version'
             }
         }
 
         stage('Build and Run Containers') {
             steps {
-                dir('unzipped') {
-                    script {
-                        if (fileExists('docker-compose.yml')) {
-                            sh 'docker compose up -d --build || docker-compose up -d --build'
-                        } else {
-                            echo 'No docker-compose.yml found in unzipped directory'
-                        }
-                    }
-                }
+                sh 'docker-compose down || true'
+                sh 'docker-compose up --build -d'
             }
         }
     }
@@ -53,6 +38,12 @@ pipeline {
     post {
         always {
             echo 'Pipeline execution completed.'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+        success {
+            echo 'Pipeline succeeded.'
         }
     }
 }
