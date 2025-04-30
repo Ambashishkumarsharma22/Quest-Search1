@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_COMPOSE_VERSION = "1.29.2"
         ZIP_FILE = 'Quest-Search.zip'
         EXTRACT_DIR = 'project'
     }
@@ -15,37 +14,17 @@ pipeline {
             }
         }
 
-        stage('Install unzip (if missing)') {
-            steps {
-                echo 'Checking if unzip is available...'
-                sh '''
-                    if ! command -v unzip &> /dev/null; then
-                        echo "Installing unzip..."
-                        apt-get update && apt-get install -y unzip
-                    fi
-                '''
-            }
-        }
-
         stage('Unzip Project') {
             steps {
                 echo "Unzipping project archive..."
                 sh '''
+                    if ! command -v unzip &> /dev/null; then
+                        echo "Error: unzip not installed!"
+                        exit 1
+                    fi
+
                     mkdir -p ${EXTRACT_DIR}
                     unzip -o ${ZIP_FILE} -d ${EXTRACT_DIR}
-                '''
-            }
-        }
-
-        stage('Install Docker Compose (if missing)') {
-            steps {
-                echo 'Checking Docker Compose version...'
-                sh '''
-                    if ! command -v docker-compose &> /dev/null; then
-                        echo "Installing Docker Compose..."
-                        curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                        chmod +x /usr/local/bin/docker-compose
-                    fi
                 '''
             }
         }
