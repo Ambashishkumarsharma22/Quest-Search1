@@ -1,32 +1,58 @@
 pipeline {
     agent any
 
+    environment {
+        REPO_URL = 'https://github.com/Ambashishkumarsharma22/Quest-Search1.git'
+        ZIP_FILE = 'Quest-search-main.zip'
+    }
+
     stages {
-        stage('Clone Repo') {
+        stage('Checkout Code') {
             steps {
-                git 'https://github.com/Ambashishkumarsharma22/Quest-Search1'
+                git url: "${REPO_URL}"
             }
         }
 
-        stage('Build') {
+        stage('Unzip Project') {
             steps {
-                echo 'Building the project...'
-                // Add build commands here
+                sh '''
+                    if [ -f "${ZIP_FILE}" ]; then
+                        unzip -o ${ZIP_FILE} -d unzipped
+                        echo "Unzipped project to ./unzipped"
+                    else
+                        echo "Zip file not found: ${ZIP_FILE}"
+                    fi
+                '''
             }
         }
 
-        stage('Test') {
+        stage('Check Docker & Compose') {
             steps {
-                echo 'Running tests...'
-                // Add test commands here
+                sh '''
+                    docker --version
+                    docker compose version || docker-compose version
+                '''
             }
         }
 
-        stage('Deploy') {
+        stage('Build and Run Containers') {
             steps {
-                echo 'Deploying...'
-                // Add deployment steps if any
+                dir('unzipped') {
+                    script {
+                        if (fileExists('docker-compose.yml')) {
+                            sh 'docker compose up -d --build || docker-compose up -d --build'
+                        } else {
+                            echo 'No docker-compose.yml found in unzipped directory'
+                        }
+                    }
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed.'
         }
     }
 }
