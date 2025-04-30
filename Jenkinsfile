@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        ZIP_FILE = 'Quest-Search.zip'
-        EXTRACT_DIR = 'project'
+        ZIP_FILE = 'project.zip'
+        EXTRACT_DIR = 'unzipped_project'
     }
 
     stages {
@@ -18,11 +18,10 @@ pipeline {
             steps {
                 echo "Unzipping project archive..."
                 sh '''
-                    if ! command -v unzip &> /dev/null; then
-                        echo "Error: unzip not installed!"
+                    if ! command -v unzip >/dev/null 2>&1; then
+                        echo "Error: unzip is not installed!"
                         exit 1
                     fi
-
                     mkdir -p ${EXTRACT_DIR}
                     unzip -o ${ZIP_FILE} -d ${EXTRACT_DIR}
                 '''
@@ -31,18 +30,27 @@ pipeline {
 
         stage('Build and Run Containers') {
             steps {
-                echo 'Starting containers...'
+                echo 'Starting Docker containers...'
                 dir("${EXTRACT_DIR}") {
-                    sh 'docker-compose up -d --build'
+                    sh '''
+                        if [ ! -f docker-compose.yml ]; then
+                            echo "docker-compose.yml not found in ${EXTRACT_DIR}"
+                            exit 1
+                        fi
+                        docker-compose down || true
+                        docker-compose up --build -d
+                    '''
                 }
             }
         }
 
         stage('Teardown') {
             steps {
-                echo 'Stopping containers...'
+                echo 'Stopping and removing Docker containers...'
                 dir("${EXTRACT_DIR}") {
-                    sh 'docker-compose down'
+                    sh '''
+                        docker-compose down
+                    '''
                 }
             }
         }
