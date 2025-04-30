@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:24.0.6' // Or latest compatible version
+            args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
+        }
+    }
 
     environment {
         COMPOSE_PROJECT_DIR = "${WORKSPACE}/unzipped_project"
@@ -49,6 +54,7 @@ pipeline {
             steps {
                 dir('unzipped_project/apps/frontend') {
                     echo 'Installing frontend dependencies and running tests...'
+                    sh 'apk add --no-cache nodejs npm' // Alpine-based container might need this
                     sh 'npm ci'
                     sh 'npm test || echo "Frontend tests failed"'
                 }
@@ -59,6 +65,7 @@ pipeline {
             steps {
                 dir('unzipped_project/apps/backend') {
                     echo 'Installing backend dependencies and running tests...'
+                    sh 'apk add --no-cache nodejs npm'
                     sh 'npm ci'
                     sh 'npm test || echo "Backend tests failed"'
                 }
