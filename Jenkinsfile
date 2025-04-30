@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_ZIP = 'project.zip'
-        UNZIP_DIR = 'unzipped_project'
+        // Add /usr/local/bin to PATH so Jenkins can find docker-compose
+        PATH = "/usr/local/bin:$PATH"
     }
 
     stages {
@@ -18,13 +18,9 @@ pipeline {
             steps {
                 echo 'Unzipping project archive...'
                 sh '''
-                    if ! command -v unzip >/dev/null; then
-                        echo "Error: unzip not installed!"
-                        exit 1
-                    fi
-
-                    mkdir -p ${UNZIP_DIR}
-                    unzip -o ${PROJECT_ZIP} -d ${UNZIP_DIR}
+                    command -v unzip
+                    mkdir -p unzipped_project
+                    unzip -o project.zip -d unzipped_project
                 '''
             }
         }
@@ -32,7 +28,7 @@ pipeline {
         stage('Build and Run Containers') {
             steps {
                 echo 'Building and starting Docker containers...'
-                dir("${UNZIP_DIR}") {
+                dir('unzipped_project') {
                     sh '''
                         docker-compose down || true
                         docker-compose build
