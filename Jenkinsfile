@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:24.0.6' // Or latest compatible version
-            args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
-        }
-    }
+    agent any
 
     environment {
         COMPOSE_PROJECT_DIR = "${WORKSPACE}/unzipped_project"
@@ -43,9 +38,9 @@ pipeline {
             steps {
                 dir('unzipped_project') {
                     echo 'Building Docker containers...'
-                    sh 'docker compose down || true'
-                    sh 'docker compose build'
-                    sh 'docker compose up -d'
+                    sh 'docker-compose down || true'
+                    sh 'docker-compose build'
+                    sh 'docker-compose up -d'
                 }
             }
         }
@@ -54,9 +49,14 @@ pipeline {
             steps {
                 dir('unzipped_project/apps/frontend') {
                     echo 'Installing frontend dependencies and running tests...'
-                    sh 'apk add --no-cache nodejs npm' // Alpine-based container might need this
-                    sh 'npm ci'
-                    sh 'npm test || echo "Frontend tests failed"'
+                    sh '''
+                        if ! command -v npm > /dev/null; then
+                            echo "npm not found. Please install Node.js and npm."
+                            exit 1
+                        fi
+                        npm ci
+                        npm test || echo "Frontend tests failed"
+                    '''
                 }
             }
         }
@@ -65,9 +65,14 @@ pipeline {
             steps {
                 dir('unzipped_project/apps/backend') {
                     echo 'Installing backend dependencies and running tests...'
-                    sh 'apk add --no-cache nodejs npm'
-                    sh 'npm ci'
-                    sh 'npm test || echo "Backend tests failed"'
+                    sh '''
+                        if ! command -v npm > /dev/null; then
+                            echo "npm not found. Please install Node.js and npm."
+                            exit 1
+                        fi
+                        npm ci
+                        npm test || echo "Backend tests failed"
+                    '''
                 }
             }
         }
@@ -77,7 +82,7 @@ pipeline {
         always {
             echo 'Cleaning up...'
             dir('unzipped_project') {
-                sh 'docker compose down || true'
+                sh 'docker-compose down || true'
             }
             cleanWs()
         }
