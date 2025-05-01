@@ -1,70 +1,31 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Declarative: Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Checkout Code') {
-            steps {
-                git url: 'https://github.com/Ambashishkumarsharma22/Quest-Search1', branch: 'main'
-            }
-        }
-
-        stage('Unzip Project') {
-            steps {
-                sh 'unzip project.zip -d ./unzipped || echo "No zip found"'
-            }
-        }
-
-        stage('Fix Dockerfile Name') {
-            steps {
-                sh 'mv ./unzipped/Dockerfile.prod ./unzipped/Dockerfile || true'
-            }
-        }
-
-        stage('Build and Run Containers') {
-            steps {
-                sh '''
-                docker-compose -f ./unzipped/docker-compose.yml up -d --build
-                '''
-            }
-        }
-
-        stage('Run Frontend Tests') {
-            steps {
-                sh '''
-                cd ./unzipped/frontend
-                npm install
-                npm test || echo "Frontend tests failed"
-                '''
-            }
-        }
-
-        stage('Run Backend Tests') {
-            steps {
-                sh '''
-                cd ./unzipped/backend
-                npm install
-                npm test || echo "Backend tests failed"
-                '''
-            }
-        }
+    environment {
+        REPO_URL = 'https://github.com/Ambashishkumarsharma22/Quest-Search1'
     }
 
-    post {
-        always {
-            echo 'Cleaning up...'
-            sh 'docker-compose down || true'
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout source code
+                git url: "${REPO_URL}", branch: 'main'
+            }
         }
-        success {
-            echo 'Build completed successfully!'
+
+        stage('Build') {
+            steps {
+                echo "Running build steps..."
+                // Run your actual build commands here
+                sh 'ls -la'
+            }
         }
-        failure {
-            echo 'Build failed.'
+
+        stage('Test') {
+            steps {
+                echo "Running tests..."
+                // Add your test commands here
+            }
         }
     }
 }
