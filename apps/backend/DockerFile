@@ -1,6 +1,18 @@
+# Use Node.js 18 Alpine for a lightweight image
 FROM node:18-alpine
+
+# Set working directory
 WORKDIR /app
-COPY . .
+
+# Copy package files and install dependencies
+COPY package*.json ./
 RUN npm install
+
+# Copy the rest of the backend code
+COPY . .
+
+# Expose the backend service port (adjust if needed)
 EXPOSE 5000
+
+# Start the backend
 CMD ["npm", "start"]
